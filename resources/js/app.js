@@ -2,17 +2,16 @@ import './bootstrap'; // Load Laravel's bootstrap.js (e.g., CSRF tokens, etc.)
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { createPinia } from 'pinia';
 
-// Create Vue app instance and mount it to the DOM element with id="app"
-const app = createApp(App).use(router);
+const pinia = createPinia();
+const app = createApp(App);
+app.use(router);
+app.use(pinia);
 
-// Register components manually (if needed)
-// Example component (remove if not required)
-
-// Alternatively, automatically register all components in the directory (uncomment to use)
+// Optionally, automatically register all components in the directory
 Object.entries(import.meta.glob('./components/**/*.vue', { eager: true })).forEach(([path, definition]) => {
     app.component(path.split('/').pop().replace(/\.\w+$/, ''), definition.default);
 });
 
-// Finally, mount the app to the DOM
 app.mount('#app');

@@ -22,31 +22,34 @@
     </div>
 </template>
 
-
 <script>
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
+import { useRouter } from 'vue-router';
 
 export default {
     data() {
         return {
             email: '',
             password: '',
-            error: null
+            error: null,
         };
     },
     methods: {
         async login() {
             try {
-                let response = await axios.post('/api/login', {
+                const response = await axios.post('/api/login', {
                     email: this.email,
-                    password: this.password
+                    password: this.password,
                 });
-                localStorage.setItem('token', response.data.token);
+                // Set the token in the store (which will update localStorage and reactive state)
+                const authStore = useAuthStore();
+                authStore.setToken(response.data.token);
                 this.$router.push('/');
             } catch (err) {
                 this.error = "Invalid credentials";
             }
-        }
-    }
+        },
+    },
 };
 </script>

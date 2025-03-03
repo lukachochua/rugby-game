@@ -1,4 +1,3 @@
-
 <template>
     <div>
         <nav class="p-4 bg-gray-200">
@@ -16,41 +15,25 @@
 </template>
 
 <script>
+import { useAuthStore } from './stores/auth';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
     name: 'App',
-    data() {
-        return {
-            token: localStorage.getItem('token') || null,
-        };
-    },
-    computed: {
-        isAuthenticated() {
-            return !!this.token;
-        },
-    },
-    methods: {
-        logout() {
-            localStorage.removeItem('token');
-            this.token = null;  // Update reactive property
-            this.$router.push('/login');
-        },
-    },
-    created() {
-        // Optionally, listen for token changes from other components
-        window.addEventListener('storage', this.syncToken);
-    },
-    beforeUnmount() {
-        window.removeEventListener('storage', this.syncToken);
-    },
-    methods: {
-        logout() {
-            localStorage.removeItem('token');
-            this.token = null;
-            this.$router.push('/login');
-        },
-        syncToken() {
-            this.token = localStorage.getItem('token');
-        },
+    setup() {
+        const authStore = useAuthStore();
+        const router = useRouter();
+
+        // Use the store's reactive getter
+        const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+        function logout() {
+            authStore.logout();
+            router.push('/login');
+        }
+
+        return { isAuthenticated, logout };
     },
 };
 </script>
