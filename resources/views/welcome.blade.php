@@ -7,7 +7,7 @@
     <title>Rugby Game</title>
 
     <!-- Vite directive for CSS -->
-    @vite(['resources/js/app.js', 'resources/css/app.css']) <!-- Including both JS and CSS files compiled by Vite -->
+    @vite(['resources/js/app.js', 'resources/css/app.css'])
 </head>
 
 <body>

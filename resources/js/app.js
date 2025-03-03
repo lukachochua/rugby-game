@@ -8,8 +8,6 @@ const app = createApp(App).use(router);
 
 // Register components manually (if needed)
 // Example component (remove if not required)
-import ExampleComponent from './components/ExampleComponent.vue';
-app.component('example-component', ExampleComponent);
 
 // Alternatively, automatically register all components in the directory (uncomment to use)
 Object.entries(import.meta.glob('./components/**/*.vue', { eager: true })).forEach(([path, definition]) => {
