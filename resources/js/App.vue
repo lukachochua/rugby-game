@@ -1,14 +1,21 @@
 <template>
     <div>
-        <nav class="p-4 bg-gray-200">
-            <router-link to="/">Dashboard</router-link>
-            <span v-if="!isAuthenticated">
-                | <router-link to="/login">Login</router-link>
-                | <router-link to="/register">Register</router-link>
-            </span>
-            <span v-else>
-                | <a href="#" @click.prevent="logout">Logout</a>
-            </span>
+        <nav
+            class="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+            <div>
+                <router-link to="/" class="text-2xl font-bold">Rugby Game</router-link>
+            </div>
+            <div>
+                <template v-if="!isAuthenticated">
+                    <router-link to="/login" class="px-3 py-1 hover:underline">Login</router-link>
+                    <router-link to="/register" class="px-3 py-1 hover:underline">Register</router-link>
+                </template>
+                <template v-else>
+                    <router-link to="/create-player" class="px-3 py-1 hover:underline">Create Player</router-link>
+                    <router-link to="/players" class="px-3 py-1 hover:underline">View Players</router-link>
+                    <button @click="logout" class="px-3 py-1 hover:underline">Logout</button>
+                </template>
+            </div>
         </nav>
         <router-view></router-view>
     </div>
@@ -24,14 +31,11 @@ export default {
     setup() {
         const authStore = useAuthStore();
         const router = useRouter();
-
-        // Use the store's reactive getter
         const isAuthenticated = computed(() => authStore.isAuthenticated);
-
-        function logout() {
+        const logout = () => {
             authStore.logout();
             router.push('/login');
-        }
+        };
 
         return { isAuthenticated, logout };
     },

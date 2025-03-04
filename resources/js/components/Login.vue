@@ -1,22 +1,23 @@
 <template>
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 class="text-2xl font-semibold mb-6">Login</h2>
-            <form @submit.prevent="login">
-                <div class="mb-4">
+    <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-white">
+        <div class="bg-white rounded-xl shadow-2xl p-10 w-full max-w-md">
+            <h2 class="text-3xl font-semibold text-center text-gray-800 mb-8">Login</h2>
+            <form @submit.prevent="login" class="space-y-6">
+                <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                     <input type="email" id="email" v-model="email"
-                        class="mt-1 p-3 w-full border border-gray-300 rounded-md shadow-sm"
-                        placeholder="Enter your email" required />
+                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="you@example.com" required />
                 </div>
-                <div class="mb-6">
+                <div>
                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                     <input type="password" id="password" v-model="password"
-                        class="mt-1 p-3 w-full border border-gray-300 rounded-md shadow-sm"
-                        placeholder="Enter your password" required />
+                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="********" required />
                 </div>
                 <button type="submit"
-                    class="w-full py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700">Login</button>
+                    class="w-full py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">Login</button>
+                <div v-if="error" class="text-red-600 text-center mt-4">{{ error }}</div>
             </form>
         </div>
     </div>
@@ -28,6 +29,7 @@ import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 
 export default {
+    name: 'Login',
     data() {
         return {
             email: '',
@@ -42,7 +44,6 @@ export default {
                     email: this.email,
                     password: this.password,
                 });
-                // Set the token in the store (which will update localStorage and reactive state)
                 const authStore = useAuthStore();
                 authStore.setToken(response.data.token);
                 this.$router.push('/');
