@@ -19,6 +19,7 @@ class Player extends Model
         'name',
         'position',
         'team',
+        'team_id',
         'height',
         'weight',
         'appearance',
@@ -55,5 +56,21 @@ class Player extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the team that the player belongs to.
+     */
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * Check if the player is eligible to play (must be on a team).
+     */
+    public function isEligibleToPlay()
+    {
+        return !is_null($this->team_id);
     }
 }

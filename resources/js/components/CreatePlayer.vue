@@ -3,7 +3,12 @@
         <div class="bg-white rounded-xl shadow-2xl p-10 w-full max-w-lg">
             <h2 class="text-3xl font-semibold text-center text-gray-800 mb-8">Create Player</h2>
 
-            <form @submit.prevent="createPlayer" class="space-y-6">
+            <div v-if="loading" class="text-center py-6">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                <p class="mt-3 text-gray-600">Loading teams...</p>
+            </div>
+
+            <form v-else @submit.prevent="createPlayer" class="space-y-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Player Name</label>
                     <input type="text" v-model="form.name" required
@@ -23,8 +28,16 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Team</label>
-                    <input type="text" v-model="form.team" required
-                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    <select v-model="form.team_id"
+                        class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">No Team (Player won't be eligible to play)</option>
+                        <option v-for="team in teams" :key="team.id" :value="team.id">
+                            {{ team.name }}
+                        </option>
+                    </select>
+                    <p class="text-sm text-red-600 mt-1" v-if="!form.team_id">
+                        Note: Players must be on a team to play in games.
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -80,7 +93,7 @@ export default {
             form: {
                 name: '',
                 position: '',
-                team: '',
+                team_id: null, // Changed from 'team' to 'team_id' to match backend
                 height: null,
                 weight: null,
                 speed: 50,
@@ -91,6 +104,8 @@ export default {
                 kicking: 50,
                 passing: 50,
             },
+            teams: [], // Added to store available teams
+            loading: true, // Added loading state
             errorMessage: null,
             successMessage: null,
             stats: [
@@ -115,6 +130,11 @@ export default {
             }
         };
     },
+    
+    // Added created lifecycle hook to fetch teams when component loads
+    created() {
+        this.fetchTeams();
+    },
 
     computed: {
         totalStatPoints() {
@@ -128,7 +148,20 @@ export default {
         },
     },
     methods: {
-        // Fix: Renamed method to be more clear about its purpose
+        // Added method to fetch teams from the API
+        async fetchTeams() {
+            this.loading = true;
+            try {
+                const response = await axios.get('/api/teams');
+                this.teams = response.data;
+            } catch (error) {
+                console.error('Error fetching teams:', error);
+                this.errorMessage = 'Failed to load teams. Please try again.';
+            } finally {
+                this.loading = false;
+            }
+        },
+        
         updateStatCaps() {
             // Don't reset all stats, just ensure they don't exceed caps
             if (this.form.position) {
@@ -137,16 +170,18 @@ export default {
                 });
             }
         },
+        
         getStatCap(statKey) {
             return this.form.position ? this.positionCaps[this.form.position][statKey] || 100 : 100;
         },
+        
         validateStat(statKey) {
             const cap = this.getStatCap(statKey);
             if (this.form[statKey] > cap) {
                 this.form[statKey] = cap;
             }
         },
-        // Fix: Added missing createPlayer method implementation
+        
         async createPlayer() {
             this.errorMessage = null;
             this.successMessage = null;
@@ -157,9 +192,20 @@ export default {
             }
 
             try {
+                // If a team is selected, get the team name for the 'team' field
+                if (this.form.team_id) {
+                    const selectedTeam = this.teams.find(team => team.id === this.form.team_id);
+                    if (selectedTeam) {
+                        this.form.team = selectedTeam.name;
+                    }
+                } else {
+                    // Reset team name if no team selected
+                    this.form.team = null;
+                }
+                
                 const response = await axios.post('/api/players', this.form);
                 this.successMessage = 'Player created successfully!';
-                // Clear form or redirect as needed
+                
                 setTimeout(() => {
                     // Optionally redirect to players list or clear form
                     // this.$router.push('/players');
@@ -174,11 +220,13 @@ export default {
                 console.error('Error creating player:', error);
             }
         },
+        
         resetForm() {
             this.form = {
                 name: '',
                 position: '',
-                team: '',
+                team_id: null,
+                team: null,
                 height: null,
                 weight: null,
                 speed: 50,

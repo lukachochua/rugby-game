@@ -12,7 +12,7 @@ class PlayerController extends Controller
         $request->validate([
             'name'       => 'required|string|max:255',
             'position'   => ['required', 'string', 'in:fly-half,scrumhalf,prop,lock,third row,number 8,center,wing,fullback'],
-            'team'       => 'required|string|max:255',
+            'team'       => 'required|string|max:255|nullable',
             'height'     => 'nullable|integer',
             'weight'     => 'nullable|integer',
             'speed'      => 'nullable|integer|min:0|max:100',
