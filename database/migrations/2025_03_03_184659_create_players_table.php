@@ -13,10 +13,22 @@ return new class extends Migration
     {
         Schema::create('players', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('name');
             $table->string('position');
-            $table->string('team');
+            $table->string('team')->nullable();
+            $table->integer('height')->nullable();
+            $table->integer('weight')->nullable();
+            $table->json('appearance')->nullable();
+            $table->integer('speed')->default(50);
+            $table->integer('strength')->default(50);
+            $table->integer('agility')->default(50);
+            $table->integer('stamina')->default(50);
+            $table->integer('tackling')->default(50);
+            $table->integer('kicking')->default(50);
+            $table->integer('passing')->default(50);
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 
