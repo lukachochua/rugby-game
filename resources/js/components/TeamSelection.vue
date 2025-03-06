@@ -75,8 +75,9 @@
 
             <!-- Create/Edit Team Modal -->
             <div v-if="showCreateTeamModal || showEditTeamModal"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                class="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div class="fixed inset-0 backdrop-blur-sm"></div>
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 relative z-10">
                     <h2 class="text-2xl font-bold mb-4">
                         {{ showEditTeamModal ? 'Edit Team' : 'Create New Team' }}
                     </h2>
@@ -136,9 +137,9 @@
             </div>
 
             <!-- Add Player to Team Modal -->
-            <div v-if="isAddPlayerModalVisible"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div v-if="isAddPlayerModalVisible" class="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div class="fixed inset-0 backdrop-blur-sm"></div>
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 relative z-10">
                     <h2 class="text-2xl font-bold mb-4">Add Player to {{ selectedTeam?.name }}</h2>
 
                     <div v-if="loading" class="text-center py-6">
@@ -174,9 +175,9 @@
             </div>
 
             <!-- Delete Confirmation Modal -->
-            <div v-if="showDeleteModal"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div v-if="showDeleteModal" class="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div class="fixed inset-0 backdrop-blur-sm"></div>
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6 border border-gray-200 relative z-10">
                     <h2 class="text-2xl font-bold mb-4 text-red-600">Delete Team</h2>
                     <p class="mb-6">Are you sure you want to delete team "{{ teamToDelete?.name }}"? This action cannot
                         be undone, and all players will be removed from this team.</p>
