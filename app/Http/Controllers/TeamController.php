@@ -127,27 +127,22 @@ class TeamController extends Controller
     public function addPlayer(Request $request, Team $team)
     {
         $request->validate([
-            'player_id' => 'required|exists:players,id',
+            'player_id' => 'required|exists:players,id'
         ]);
 
         $player = Player::findOrFail($request->player_id);
 
-        // Check if the player is already on a team
-        if ($player->team_id) {
-            return response()->json([
-                'message' => 'Player is already on a team',
-            ], 400);
-        }
+        // Remove this check to allow moving players between teams
+        // if ($player->team_id) {
+        //     return response()->json(['message' => 'Player already on a team'], 400);
+        // }
 
-        // Add the player to the team
         $player->team_id = $team->id;
         $player->save();
 
-        // Return success response with updated player and team
         return response()->json([
-            'message' => 'Player added to team successfully',
-            'player' => $player,
-            'team' => $team->load('players'), // Load the team with its players
+            'message' => 'Player added successfully',
+            'player' => $player->load('team')
         ]);
     }
 

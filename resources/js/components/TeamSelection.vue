@@ -50,8 +50,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <h3 class="font-medium text-gray-800 mb-2">Players ({{ team.players ? team.players.length :
-                                0 }})</h3>
+                            <h3 class="font-medium text-gray-800 mb-2">Players ({{ team.players?.length || 0 }})</h3>
                             <div v-if="team.players && team.players.length > 0" class="space-y-2">
                                 <div v-for="player in team.players" :key="player.id"
                                     class="flex justify-between items-center bg-gray-50 rounded p-2">
@@ -65,7 +64,7 @@
                             <div v-else class="text-gray-500 text-sm">
                                 No players in this team.
                             </div>
-                            <button @click="showAddPlayerModal(team)"
+                            <button @click="openAddPlayerModal(team)"
                                 class="mt-3 w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-800 py-1 px-3 rounded text-sm">
                                 Add Player
                             </button>
@@ -137,7 +136,7 @@
             </div>
 
             <!-- Add Player to Team Modal -->
-            <div v-if="showAddPlayerModal"
+            <div v-if="isAddPlayerModalVisible"
                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
                     <h2 class="text-2xl font-bold mb-4">Add Player to {{ selectedTeam?.name }}</h2>
@@ -166,7 +165,7 @@
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <button @click="showAddPlayerModal = false"
+                        <button @click="isAddPlayerModalVisible = false"
                             class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                             Close
                         </button>
@@ -208,9 +207,10 @@ export default {
             availablePlayers: [],
             loading: true,
             errorMessage: null,
+            successMessage: null,
             showCreateTeamModal: false,
             showEditTeamModal: false,
-            showAddPlayerModal: false,
+            isAddPlayerModalVisible: false,
             showDeleteModal: false,
             selectedTeam: null,
             teamToDelete: null,
@@ -234,14 +234,12 @@ export default {
                 const response = await axios.get('/api/teams');
                 this.teams = response.data;
             } catch (error) {
-                console.error('Error fetching teams:', error);
                 this.errorMessage = 'Failed to load teams. Please try again.';
             } finally {
                 this.loading = false;
             }
         },
 
-        // Team CRUD methods
         resetTeamForm() {
             this.teamForm = {
                 name: '',
@@ -258,10 +256,10 @@ export default {
                 const response = await axios.post('/api/teams', this.teamForm);
                 this.teams.push(response.data);
                 this.closeTeamModal();
-                this.fetchTeams(); // Refresh the list
+                await this.fetchTeams();
+                this.successMessage = 'Team created successfully!';
             } catch (error) {
-                console.error('Error creating team:', error);
-                this.errorMessage = 'Failed to create team. Please try again.';
+                this.errorMessage = error.response?.data?.message || 'Failed to create team.';
             }
         },
 
@@ -278,10 +276,10 @@ export default {
                     this.teams[index] = response.data;
                 }
                 this.closeTeamModal();
-                this.fetchTeams(); // Refresh to get updated relations
+                await this.fetchTeams();
+                this.successMessage = 'Team updated successfully!';
             } catch (error) {
-                console.error('Error updating team:', error);
-                this.errorMessage = 'Failed to update team. Please try again.';
+                this.errorMessage = error.response?.data?.message || 'Failed to update team.';
             }
         },
 
@@ -298,9 +296,9 @@ export default {
                 this.teams = this.teams.filter(t => t.id !== this.teamToDelete.id);
                 this.showDeleteModal = false;
                 this.teamToDelete = null;
+                this.successMessage = 'Team deleted successfully!';
             } catch (error) {
-                console.error('Error deleting team:', error);
-                this.errorMessage = 'Failed to delete team. Please try again.';
+                this.errorMessage = error.response?.data?.message || 'Failed to delete team.';
             }
         },
 
@@ -310,24 +308,18 @@ export default {
             this.resetTeamForm();
         },
 
-        // Player-Team relationship methods
-        async showAddPlayerModal(team) {
+        async openAddPlayerModal(team) {
             this.selectedTeam = team;
             this.isAddPlayerModalVisible = true;
             this.loading = true;
 
             try {
                 const response = await axios.get('/api/players');
-                console.log('Players API Response:', response.data); // Log the response
-
-                // Filter players who are not assigned to any team or are assigned to a different team
                 this.availablePlayers = response.data.filter(player =>
-                    player.team_id === null || player.team_id !== team.id
+                    player.team_id === null
                 );
-
-                console.log('Available Players:', this.availablePlayers); // Log the filtered players
             } catch (error) {
-                console.error('Error fetching available players:', error);
+                this.errorMessage = 'Failed to load available players.';
             } finally {
                 this.loading = false;
             }
@@ -337,37 +329,26 @@ export default {
             if (!this.selectedTeam) return;
 
             try {
-                const response = await axios.post(`/api/teams/${this.selectedTeam.id}/add-player`, {
+                await axios.post(`/api/teams/${this.selectedTeam.id}/add-player`, {
                     player_id: playerId
                 });
-
-                // Refresh the teams list to reflect changes
                 await this.fetchTeams();
-
-                // Close the add player modal
-                this.showAddPlayerModal = false;
-
-                // Optionally, show a success message
-                this.errorMessage = null;
-                this.successMessage = 'Player added to team successfully!';
+                this.isAddPlayerModalVisible = false;
+                this.successMessage = 'Player added successfully!';
             } catch (error) {
-                console.error('Error adding player to team:', error);
-                this.errorMessage = error.response?.data?.message || 'Failed to add player to team. Please try again.';
+                this.errorMessage = error.response?.data?.message || 'Failed to add player.';
             }
         },
-
 
         async removePlayerFromTeam(team, player) {
             try {
                 await axios.post(`/api/teams/${team.id}/remove-player`, {
                     player_id: player.id
                 });
-
-                // Refresh teams list to reflect changes
-                this.fetchTeams();
+                await this.fetchTeams();
+                this.successMessage = 'Player removed successfully!';
             } catch (error) {
-                console.error('Error removing player from team:', error);
-                this.errorMessage = 'Failed to remove player from team. Please try again.';
+                this.errorMessage = error.response?.data?.message || 'Failed to remove player.';
             }
         }
     }
